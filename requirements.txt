@@ -1,5 +1,4 @@
-streamlit==1.45.0
-docx
+streamlit
+python-docx
 deep-translator
 pronouncing
-difflib
