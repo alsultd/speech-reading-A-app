@@ -2,3 +2,4 @@ streamlit
 python-docx
 deep-translator
 pronouncing
+speech_recognition
