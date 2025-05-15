@@ -2,7 +2,7 @@
 
 import docx
 import re
-import speech_recognition as sr
+#import speech_recognition as sr
 from deep_translator import GoogleTranslator
 import pronouncing
 import difflib
