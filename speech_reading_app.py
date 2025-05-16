@@ -60,23 +60,23 @@ def evaluate_speech(original, spoken):
     missing_words = [word for word in original_words if word not in spoken_words]
     return error_rate, extra_words, missing_words
 
-def listen_and_convert():
-    """Mikrofondan konuşmayı metne çevirir."""
-    recognizer = sr.Recognizer()
-    recognizer.pause_threshold = 2
-    recognizer.dynamic_energy_threshold = False
-    with sr.Microphone() as source:
-        st.write("Adjusting for ambient noise... please wait.")
-        recognizer.adjust_for_ambient_noise(source, duration=4)
-        winsound.Beep(1000, 500)
-        st.write("...Start speaking...")
-        try:
-            audio = recognizer.listen(source, timeout=2, phrase_time_limit=30)
-            return recognizer.recognize_google(audio, language="en-US")
-        except sr.UnknownValueError:
-            return "Could not understand the speech."
-        except sr.RequestError as e:
-            return f"Could not connect to the speech recognition service: {e}"
+#def listen_and_convert():
+#    """Mikrofondan konuşmayı metne çevirir."""
+#    recognizer = sr.Recognizer()
+#    recognizer.pause_threshold = 2
+#    recognizer.dynamic_energy_threshold = False
+#    with sr.Microphone() as source:
+#        st.write("Adjusting for ambient noise... please wait.")
+#        recognizer.adjust_for_ambient_noise(source, duration=4)
+#        winsound.Beep(1000, 500)
+#        st.write("...Start speaking...")
+#        try:
+#            audio = recognizer.listen(source, timeout=2, phrase_time_limit=30)
+#            return recognizer.recognize_google(audio, language="en-US")
+#        except sr.UnknownValueError:
+#            return "Could not understand the speech."
+#        except sr.RequestError as e:
+#            return f"Could not connect to the speech recognition service: {e}"
 
 def translate_word(word):
     """Kelimeyi İngilizce'den Türkçe'ye çevirir."""
