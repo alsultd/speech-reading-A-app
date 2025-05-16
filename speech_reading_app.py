@@ -154,34 +154,78 @@ def report_errors(error_rate, extra_words, missing_words):
             translation = translate_word(word)
             missing_data.append({"Kelime": word, "Telaffuz": phonetic, "Türkçe": translation})
         st.table(missing_data)
-
 def main():
+    """Ana fonksiyon, Streamlit uygulamasını başlatır."""
     st.title("Sesle Okuma Çalışması")
-    st.write("Rastgele sayı:", random.randint(1, 1000))
-    st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
-    topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
-    
-    # CSS ile "Drag and drop file here" metnini gizle
-    st.markdown("""
-    <style>
-    .stFileUploader > div > div > div > div > p {
-        display: none !important;
-    }
-    .stFileUploader > div > div > div > div > button {
-        margin-top: 0px !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # File uploader etiketini özelleştir
-    uploaded_file = st.file_uploader("", type="docx", label_visibility="collapsed")
-    
-    if st.button("Metni Yükle") and uploaded_file and topic_no:
-        text = get_text_from_docx(uploaded_file, topic_no)
-        if text:
-            st.success("METİN BAŞARIYLA YÜKLENDİ!")
-            st.write(text)
-        else:
-            st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
+    st.write("Rastgele sayı:", random.randint(1, 149))
+
+    # Oturum durumunu başlat
+    if "paragraphs" not in st.session_state:
+        st.session_state["paragraphs"] = []
+        st.session_state["current_index"] = 0
+        st.session_state["selected_word"] = None
+        st.session_state["translation"] = ""
+
+    # Konu numarası girişi
+    topic_no = st.number_input("Konu No giriniz:", min_value=1, step=1)
+
+    if st.button("Metni Yükle"):
+        try:
+            text = get_text_from_docx(DOC_PATH, topic_no)
+            if text:
+                paragraphs = split_into_paragraphs(text)
+                st.session_state["paragraphs"] = paragraphs
+                st.session_state["current_index"] = 0
+                st.session_state["selected_word"] = None
+                st.session_state["translation"] = ""
+                st.success("Metin yüklendi!")
+            else:
+                st.error("Konu bulunamadı!")
+        except Exception as e:
+            st.error(f"Dosya yüklenirken hata oluştu: {e}")
+
+    if st.session_state["paragraphs"]:
+        paragraphs = st.session_state["paragraphs"]
+        current_index = st.session_state["current_index"]
+        
+        # Paragraf gösterimi
+        st.subheader(f"Paragraf {current_index + 1}/{len(paragraphs)}")
+        st.write(paragraphs[current_index])
+        
+        # Kelime çevirisi için tıklanabilir kelimeler
+        st.write("**Kelime çevirisi için kelimelere tıklayın:**")
+        cols = st.columns(5)
+        for i, word in enumerate(paragraphs[current_index].split()):
+            with cols[i % 5]:
+                if st.button(word, key=f"word_{i}_{current_index}"):
+                    st.session_state["selected_word"] = word
+                    st.session_state["translation"] = translate_word(word)
+        
+        # Çeviriyi göster
+        if st.session_state["selected_word"]:
+            st.write(f"'{st.session_state['selected_word']}' çevirisi: {st.session_state['translation']}")
+        
+        # Düğmeler
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            if st.button("Paragrafı Oku", key="read_paragraph"):
+                read_paragraph(paragraphs[current_index])
+        with col2:
+            if st.button("Sesimi Kaydet", key="record_speech"):
+                st.warning("Ses kaydı özelliği şu anda bulutta devre dışı. Mobil cihazda tarayıcı tabanlı bir çözüm eklenebilir.")
+        with col3:
+            if st.button("Paragrafı Çevir", key="translate_paragraph"):
+                translated = GoogleTranslator(source='en', target='tr').translate(paragraphs[current_index])
+                st.write(f"**Çeviri:** {translated}")
+        with col4:
+            if st.button("Sonraki Paragraf", key="next_paragraph"):
+                if current_index < len(paragraphs) - 1:
+                    st.session_state["current_index"] += 1
+                    st.session_state["selected_word"] = None
+                    st.session_state["translation"] = ""
+                    st.rerun()  # Arayüzü yeniden render et
+                else:
+                    st.success("Tüm paragraflar tamamlandı!")
+
 if __name__ == "__main__":
     main()
