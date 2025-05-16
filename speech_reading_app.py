@@ -75,7 +75,13 @@ def main():
     st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
     topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
     
-    # Daha etkili CSS ile "Drag and drop file here" ve "Browse files" butonunu gizle
+    # Dosya yükleme alanını daha görünür hale getirelim
+    st.write("Lütfen bir .docx dosyası yükleyin:")
+    uploaded_file = st.file_uploader("Dosya seçin", type="docx", label_visibility="visible")
+    st.write("Dosya durumu:", "Yüklenmiş" if uploaded_file else "Yüklenmemiş")
+    st.write("Konu numarası:", topic_no)
+    
+    # CSS ile "Drag and drop file here" ve "Browse files" butonunu gizle (isteğe bağlı)
     st.markdown("""
     <style>
     [data-testid="stFileUploaderDropzoneInstructions"] {
@@ -86,11 +92,6 @@ def main():
     }
     </style>
     """, unsafe_allow_html=True)
-    
-    # File uploader etiketini gizle
-    uploaded_file = st.file_uploader("", type="docx", label_visibility="collapsed")
-    st.write("Dosya durumu:", "Yüklenmiş" if uploaded_file else "Yüklenmemiş")
-    st.write("Konu numarası:", topic_no)
     
     if st.button("Metni Yükle"):
         st.write("Metni Yükle butonuna tıklandı!")
@@ -103,7 +104,7 @@ def main():
             else:
                 st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
         else:
-            st.write("Koşullar sağlanmadı! Dosya yüklenmiş mi:", bool(uploaded_file), "Konu numarası:", topic_no)
+            st.error("Lütfen önce bir .docx dosyası yükleyin ve geçerli bir konu numarası girin!")
 
 if __name__ == "__main__":
     main()
