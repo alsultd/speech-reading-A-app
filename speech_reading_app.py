@@ -19,10 +19,10 @@ ERROR_THRESHOLD = 0.3
 def get_text_from_docx(uploaded_file, topic_no):
     """Yüklenen Word belgesinden belirtilen konu numarasının metnini çeker."""
     if uploaded_file is not None:
-        # Yüklenen dosyayı geçici bir dosya olarak kaydet
         import tempfile
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
-            tmp_file.write(uploaded_file.getvalue())
+            # uploaded_file.getvalue() yerine .read() kullan
+            tmp_file.write(uploaded_file.read())
             tmp_file_path = tmp_file.name
         try:
             doc = docx.Document(tmp_file_path)
@@ -156,79 +156,16 @@ def report_errors(error_rate, extra_words, missing_words):
         st.table(missing_data)
 
 def main():
-    """Ana fonksiyon, Streamlit uygulamasını başlatır."""
     st.title("Sesle Okuma Çalışması")
-    st.write("Rastgele sayı:", random.randint(1, 149))
-
-    # Oturum durumunu başlat
-    if "paragraphs" not in st.session_state:
-        st.session_state["paragraphs"] = []
-        st.session_state["current_index"] = 0
-        st.session_state["selected_word"] = None
-        st.session_state["translation"] = ""
-
-    # Konu numarası girişi
+    st.write("Rastgele sayı:", random.randint(1, 1000))
     topic_no = st.number_input("Konu No giriniz:", min_value=1, step=1)
-
-    if st.button("Metni Yükle"):
-        text = get_text_from_docx(DOC_PATH, topic_no)
+    uploaded_file = st.file_uploader("Yüklemek için bir .docx dosyası seçin", type="docx")
+    if st.button("Metni Yükle") and uploaded_file and topic_no:
+        text = get_text_from_docx(uploaded_file, topic_no)
         if text:
-            paragraphs = split_into_paragraphs(text)
-            st.session_state["paragraphs"] = paragraphs
-            st.session_state["current_index"] = 0
-            st.session_state["selected_word"] = None
-            st.session_state["translation"] = ""
-            st.success("Metin yüklendi!")
+            st.write(text)
         else:
-            st.error("Konu bulunamadı!")
-
-    if st.session_state["paragraphs"]:
-        paragraphs = st.session_state["paragraphs"]
-        current_index = st.session_state["current_index"]
-        
-        # Paragraf gösterimi
-        st.subheader(f"Paragraf {current_index + 1}/{len(paragraphs)}")
-        st.write(paragraphs[current_index])
-        
-        # Kelime çevirisi için tıklanabilir kelimeler
-        st.write("**Kelime çevirisi için kelimelere tıklayın:**")
-        cols = st.columns(5)
-        for i, word in enumerate(paragraphs[current_index].split()):
-            with cols[i % 5]:
-                if st.button(word, key=f"word_{i}_{current_index}"):
-                    st.session_state["selected_word"] = word
-                    st.session_state["translation"] = translate_word(word)
-        
-        # Çeviriyi göster
-        if st.session_state["selected_word"]:
-            st.write(f"'{st.session_state['selected_word']}' çevirisi: {st.session_state['translation']}")
-        
-        # Düğmeler
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            if st.button("Paragrafı Oku", key="read_paragraph"):
-                read_paragraph(paragraphs[current_index])
-        with col2:
-            if st.button("Sesimi Kaydet", key="record_speech"):
-                user_speech = listen_and_convert()
-                st.write("**Söyledikleriniz:**", user_speech)
-                error_rate, extra_words, missing_words = evaluate_speech(paragraphs[current_index], user_speech)
-                report_errors(error_rate, extra_words, missing_words)
-                if error_rate > ERROR_THRESHOLD:
-                    st.warning("Çok fazla hata var, lütfen tekrar oku!")
-        with col3:
-            if st.button("Paragrafı Çevir", key="translate_paragraph"):
-                translated = GoogleTranslator(source='en', target='tr').translate(paragraphs[current_index])
-                st.write(f"**Çeviri:** {translated}")
-        with col4:
-            if st.button("Sonraki Paragraf", key="next_paragraph"):
-                if current_index < len(paragraphs) - 1:
-                    st.session_state["current_index"] += 1
-                    st.session_state["selected_word"] = None
-                    st.session_state["translation"] = ""
-                    st.rerun()  # Arayüzü yeniden render et
-                else:
-                    st.success("Tüm paragraflar tamamlandı!")
+            st.error("Belirtilen konu numarasına ait metin bulunamadı.")
 
 if __name__ == "__main__":
     main()
