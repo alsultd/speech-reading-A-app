@@ -6,67 +6,47 @@ import re
 import random
 
 def get_text_from_docx(uploaded_file, topic_no):
-    st.write("get_text_from_docx fonksiyonu çağrıldı!")
     if uploaded_file is not None:
-        st.write("Dosya algılandı, işlem başlıyor...")
         import tempfile
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
             try:
-                st.write("Dosya yazma denemesi yapılıyor...")
                 tmp_file.write(uploaded_file.read())
                 tmp_file_path = tmp_file.name
-                st.write("Dosya yazma başarılı, işleniyor:", tmp_file_path)
             except Exception as e:
                 st.error(f"Dosya yazma hatası: {str(e)}")
                 return None
         try:
-            st.write("Belge açılıyor...")
             doc = docx.Document(tmp_file_path)
             paragraphs = [p for p in doc.paragraphs if p.text.strip()]
-            st.write("Toplam paragraf sayısı:", len(paragraphs))
-            for i, p in enumerate(paragraphs):
-                st.write(f"Paragraf {i + 1}: '{p.text}'")
             topics = []
-            current_topic = ""
+            current_topic = []
             current_number = None
             for p in paragraphs:
-                st.write(f"Paragraf kontrol ediliyor: '{p.text}'")
                 match = re.match(r'^Konu\s*[:\s]*(\d+)', p.text, re.IGNORECASE)
-                st.write(f"Eşleşme sonucu: {match}")
                 if match:
                     if current_topic and current_number is not None:
                         topics.append({"number": current_number, "text": current_topic})
                     current_number = int(match.group(1))
-                    current_topic = ""
-                    st.write(f"Yeni konu numarası tespit edildi: {current_number}")
+                    current_topic = []
                 else:
                     if current_number is not None:
-                        current_topic += p.text + "\n"
-                        st.write(f"Mevcut konuya metin eklendi: '{p.text}'")
+                        current_topic.append(p.text)
             if current_topic and current_number is not None:
                 topics.append({"number": current_number, "text": current_topic})
-                st.write(f"Son konu eklendi: {current_number}")
-            st.write("Oluşturulan topics listesi:", topics)
+            # Hata ayıklama: topics listesini kontrol et
+            st.write("Oluşturulan topics listesi:", [{"number": t["number"], "text": t["text"][:50] + "..." if t["text"] else "Boş"} for t in topics])
             for topic in topics:
-                if "number" not in topic:
-                    st.error("Hata: 'number' anahtarı eksik!")
-                    continue
-                st.write(f"Konu kontrol ediliyor: {topic}")
                 if topic["number"] == topic_no:
-                    topic["text"] = topic["text"].replace("=== KONU SONU ===", "").strip()
-                    st.write("Eşleşen konu bulundu:", topic)
                     return topic["text"]
-            if not topics:
-                st.write("Konu başlıkları bulunamadı, tüm metni döndürüyorum.")
-                return "\n".join(p.text for p in paragraphs if p.text)
+            st.error(f"Konu {topic_no} bulunamadı!")
+            return None
         except Exception as e:
             st.error(f"Metin işleme hatası: {str(e)}")
             return None
         finally:
             import os
             os.unlink(tmp_file_path)
-    else:
-        st.write("Dosya yüklenmedi!")
+    st.error("Dosya yüklenmedi!")
     return None
 
 def main():
@@ -90,17 +70,22 @@ def main():
     [data-testid="stFileUploader"] button {
         display: none !important;
     }
+    [data-testid="stFileUploader"] {
+        border: 1px dashed #ccc;
+        padding: 10px;
+        text-align: center;
+    }
     </style>
     """, unsafe_allow_html=True)
     
     if st.button("Metni Yükle"):
-        st.write("Metni Yükle butonuna tıklandı!")
         if uploaded_file and topic_no:
-            st.write("Koşullar sağlandı, metin yükleniyor...")
             text = get_text_from_docx(uploaded_file, topic_no)
             if text:
-                st.success("METİN BAŞARIYLA YÜKLENDİ!")
-                st.write(text)
+                st.success(f"KONU {topic_no} BAŞARIYLA YÜKLENDİ!")
+                # Paragrafları ayrı ayrı göster
+                for paragraph in text:
+                    st.write(paragraph)
             else:
                 st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
         else:
