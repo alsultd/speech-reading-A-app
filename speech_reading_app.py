@@ -40,7 +40,12 @@ def get_text_from_docx(uploaded_file, topic_no):
                         current_topic += p.text + "\n"  # p.text kullan
             if current_topic and current_number is not None:
                 topics.append({"number": current_number, "text": current_topic})
+            # Hata ayıklama için topics listesini kontrol et
+            st.write("Oluşturulan topics listesi:", topics)
             for topic in topics:
+                if "number" not in topic:
+                    st.error("Hata: 'number' anahtarı eksik!")
+                    continue
                 if topic["number"] == topic_no:
                     topic["text"] = topic["text"].replace("=== KONU SONU ===", "").strip()
                     return topic["text"]
@@ -50,9 +55,7 @@ def get_text_from_docx(uploaded_file, topic_no):
         finally:
             import os
             os.unlink(tmp_file_path)
-    return None
-
-def preprocess_text(text):
+    return Nonedef preprocess_text(text):
     """Metni küçük harfe çevirir, noktalama işaretlerini kaldırır ve kelimelere ayırır."""
     return re.findall(r"\b\w+\b", text.lower())
 
@@ -157,14 +160,14 @@ def main():
     st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
     topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
     
-    # Daha etkili CSS ile "Drag and drop file here" metnini gizle
+    # Daha etkili CSS ile "Drag and drop file here" ve "Browse files" butonunu gizle
     st.markdown("""
     <style>
     [data-testid="stFileUploaderDropzoneInstructions"] {
         display: none !important;
     }
     [data-testid="stFileUploader"] button {
-        margin-top: 0px !important;
+        display: none !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -178,7 +181,5 @@ def main():
             st.success("METİN BAŞARIYLA YÜKLENDİ!")
             st.write(text)
         else:
-            st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
-
-if __name__ == "__main__":
+            st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")if __name__ == "__main__":
     main()
