@@ -158,10 +158,24 @@ def report_errors(error_rate, extra_words, missing_words):
 def main():
     st.title("Sesle Okuma Çalışması")
     st.write("Rastgele sayı:", random.randint(1, 1000))
-    # Toplam parça sayısını bilgilendirme (opsiyonel)
     st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
     topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
-    uploaded_file = st.file_uploader("Yüklemek için .docx veritabanı dosyasını seçin", type="docx")
+    
+    # CSS ile "Drag and drop file here" metnini gizle
+    st.markdown("""
+    <style>
+    .stFileUploader > div > div > div > div > p {
+        display: none !important;
+    }
+    .stFileUploader > div > div > div > div > button {
+        margin-top: 0px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # File uploader etiketini özelleştir
+    uploaded_file = st.file_uploader("", type="docx", label_visibility="collapsed")
+    
     if st.button("Metni Yükle") and uploaded_file and topic_no:
         text = get_text_from_docx(uploaded_file, topic_no)
         if text:
@@ -169,6 +183,5 @@ def main():
             st.write(text)
         else:
             st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
-
 if __name__ == "__main__":
     main()
