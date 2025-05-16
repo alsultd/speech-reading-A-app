@@ -13,7 +13,7 @@ def get_text_from_docx(uploaded_file, topic_no):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
             try:
                 st.write("Dosya yazma denemesi yapılıyor...")
-                tmp_file.write(uploaded_file.getvalue())  # getvalue() ile binary veri al
+                tmp_file.write(uploaded_file.getvalue())  # Binary veri al
                 tmp_file_path = tmp_file.name
                 st.write("Dosya yazma başarılı, işleniyor:", tmp_file_path)
             except Exception as e:
@@ -68,7 +68,8 @@ def main():
     st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
     topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
     
-    st.write("Lütfen bir .docx dosyası yüklemek için aşağıdaki alana tıklayın veya dosyayı sürükleyin:")
+    # Dosya yükleme alanını tamamen gizlemek için talimatı sadeleştirip uploader'ı optimize edelim
+    st.write("Lütfen bir .docx dosyası yüklemek için aşağıya dosya sürükleyin veya tıklayın:")
     uploaded_file = st.file_uploader("", type="docx", label_visibility="collapsed")
     st.write("Dosya durumu:", "Yüklenmiş" if uploaded_file else "Yüklenmemiş")
     st.write("Konu numarası:", topic_no)
@@ -89,6 +90,9 @@ def main():
         display: none !important;
     }
     [data-testid="stFileUploader"] > div > div > div > div {
+        display: none !important;
+    }
+    [data-testid="stFileUploader"] > div {
         display: none !important;
     }
     </style>
