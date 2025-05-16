@@ -16,29 +16,39 @@ from streamlit.components.v1 import html
 DOC_PATH = r"H:\OCR_Ana_Cikti_Guncel.docx"
 ERROR_THRESHOLD = 0.3
 
-def get_text_from_docx(doc_path, topic_no):
-    """Word belgesinden belirtilen konu numarasının metnini çeker."""
-    doc = docx.Document(doc_path)
-    paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
-    topics = []
-    current_topic = ""
-    current_number = None
-    for p in paragraphs:
-        match = re.match(r'^Konu\s*:\s*(\d+)', p)
-        if match:
+def get_text_from_docx(uploaded_file, topic_no):
+    """Yüklenen Word belgesinden belirtilen konu numarasının metnini çeker."""
+    if uploaded_file is not None:
+        # Yüklenen dosyayı geçici bir dosya olarak kaydet
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_file_path = tmp_file.name
+        try:
+            doc = docx.Document(tmp_file_path)
+            paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+            topics = []
+            current_topic = ""
+            current_number = None
+            for p in paragraphs:
+                match = re.match(r'^Konu\s*:\s*(\d+)', p)
+                if match:
+                    if current_topic and current_number is not None:
+                        topics.append({"number": current_number, "text": current_topic})
+                    current_number = int(match.group(1))
+                    current_topic = ""
+                else:
+                    if current_number is not None:
+                        current_topic += p + "\n"
             if current_topic and current_number is not None:
                 topics.append({"number": current_number, "text": current_topic})
-            current_number = int(match.group(1))
-            current_topic = ""
-        else:
-            if current_number is not None:
-                current_topic += p + "\n"
-    if current_topic and current_number is not None:
-        topics.append({"number": current_number, "text": current_topic})
-    for topic in topics:
-        if topic["number"] == topic_no:
-            topic["text"] = topic["text"].replace("=== KONU SONU ===", "").strip()
-            return topic["text"]
+            for topic in topics:
+                if topic["number"] == topic_no:
+                    topic["text"] = topic["text"].replace("=== KONU SONU ===", "").strip()
+                    return topic["text"]
+        finally:
+            import os
+            os.unlink(tmp_file_path)  # Geçici dosyayı sil
     return None
 
 def split_into_paragraphs(text):
