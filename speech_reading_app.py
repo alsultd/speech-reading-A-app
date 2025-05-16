@@ -12,8 +12,12 @@ def get_text_from_docx(uploaded_file, topic_no):
             tmp_file.write(uploaded_file.read())
             tmp_file_path = tmp_file.name
         try:
+            st.write("Dosya yükleme başarılı, işleniyor:", tmp_file_path)
             doc = docx.Document(tmp_file_path)
             paragraphs = [p for p in doc.paragraphs if p.text.strip()]  # Boş olmayan paragrafları al
+            st.write("Toplam paragraf sayısı:", len(paragraphs))
+            for i, p in enumerate(paragraphs):
+                st.write(f"Paragraf {i + 1}: '{p.text}'")
             topics = []
             current_topic = ""
             current_number = None
@@ -37,10 +41,14 @@ def get_text_from_docx(uploaded_file, topic_no):
                     continue
                 if topic["number"] == topic_no:
                     topic["text"] = topic["text"].replace("=== KONU SONU ===", "").strip()
+                    st.write("Eşleşen konu bulundu:", topic)
                     return topic["text"]
             if not topics:
                 st.write("Konu başlıkları bulunamadı, tüm metni döndürüyorum.")
                 return "\n".join(p.text for p in paragraphs if p.text)
+        except Exception as e:
+            st.error(f"Hata oluştu: {str(e)}")
+            return None
         finally:
             import os
             os.unlink(tmp_file_path)
