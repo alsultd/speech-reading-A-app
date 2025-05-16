@@ -50,8 +50,7 @@ def get_text_from_docx(uploaded_file, topic_no):
         finally:
             import os
             os.unlink(tmp_file_path)
-    return None
-def split_into_paragraphs(text):
+    return Nonedef split_into_paragraphs(text):
     """Metni paragraflara böler ve boş satırları temizler."""
     return [p.strip() for p in text.split('\n') if p.strip()]
 
@@ -181,5 +180,7 @@ def main():
             st.success("METİN BAŞARIYLA YÜKLENDİ!")
             st.write(text)
         else:
-            st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")if __name__ == "__main__":
+            st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
+
+if __name__ == "__main__":
     main()
