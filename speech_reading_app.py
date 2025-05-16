@@ -6,6 +6,7 @@ import re
 import random
 
 def get_text_from_docx(uploaded_file, topic_no):
+    st.write("get_text_from_docx fonksiyonu çağrıldı!")
     if uploaded_file is not None:
         st.write("Dosya algılandı, işlem başlıyor...")
         import tempfile
@@ -64,12 +65,13 @@ def get_text_from_docx(uploaded_file, topic_no):
         finally:
             import os
             os.unlink(tmp_file_path)
-    st.write("Dosya yüklenmedi.")
+    else:
+        st.write("Dosya yüklenmedi!")
     return None
 
 def main():
     st.title("Sesle Okuma Çalışması")
-    st.write("Rastgele sayı:", random.randint(1, 1000))
+    st.write("Rastgele sayı:", random.randint(1, 158))
     st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
     topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
     
@@ -87,14 +89,21 @@ def main():
     
     # File uploader etiketini gizle
     uploaded_file = st.file_uploader("", type="docx", label_visibility="collapsed")
+    st.write("Dosya durumu:", "Yüklenmiş" if uploaded_file else "Yüklenmemiş")
+    st.write("Konu numarası:", topic_no)
     
-    if st.button("Metni Yükle") and uploaded_file and topic_no:
-        text = get_text_from_docx(uploaded_file, topic_no)
-        if text:
-            st.success("METİN BAŞARIYLA YÜKLENDİ!")
-            st.write(text)
+    if st.button("Metni Yükle"):
+        st.write("Metni Yükle butonuna tıklandı!")
+        if uploaded_file and topic_no:
+            st.write("Koşullar sağlandı, metin yükleniyor...")
+            text = get_text_from_docx(uploaded_file, topic_no)
+            if text:
+                st.success("METİN BAŞARIYLA YÜKLENDİ!")
+                st.write(text)
+            else:
+                st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
         else:
-            st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
+            st.write("Koşullar sağlanmadı! Dosya yüklenmiş mi:", bool(uploaded_file), "Konu numarası:", topic_no)
 
 if __name__ == "__main__":
     main()
