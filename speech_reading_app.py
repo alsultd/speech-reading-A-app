@@ -2,15 +2,15 @@
 
 import docx
 import re
-#import speech_recognition as sr
-from deep_translator import GoogleTranslator
-import pronouncing
-import difflib
-import time
-#import winsound
+#import speech_recognition as sr#
+#from deep_translator import GoogleTranslator
+#import pronouncing
+#import difflib
+#import time
+#import winsound   #
 import random
 import streamlit as st
-from streamlit.components.v1 import html
+#from streamlit.components.v1 import html
 
 # Sabitler
 DOC_PATH = r"H:\OCR_Ana_Cikti_Guncel.docx"
@@ -50,9 +50,7 @@ def get_text_from_docx(uploaded_file, topic_no):
         finally:
             import os
             os.unlink(tmp_file_path)
-    return Nonedef split_into_paragraphs(text):
-    """Metni paragraflara böler ve boş satırları temizler."""
-    return [p.strip() for p in text.split('\n') if p.strip()]
+    return None
 
 def preprocess_text(text):
     """Metni küçük harfe çevirir, noktalama işaretlerini kaldırır ve kelimelere ayırır."""
