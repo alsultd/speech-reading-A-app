@@ -75,13 +75,13 @@ def main():
     st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
     topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
     
-    # Dosya yükleme alanını daha görünür hale getirelim
-    st.write("Lütfen bir .docx dosyası yükleyin:")
-    uploaded_file = st.file_uploader("Dosya seçin", type="docx", label_visibility="visible")
+    # Kullanıcıya talimat verelim ama kutucuğu gizleyelim
+    st.write("Lütfen bir .docx dosyası yüklemek için aşağıdaki alana tıklayın veya dosyayı sürükleyin:")
+    uploaded_file = st.file_uploader("", type="docx", label_visibility="collapsed")
     st.write("Dosya durumu:", "Yüklenmiş" if uploaded_file else "Yüklenmemiş")
     st.write("Konu numarası:", topic_no)
     
-    # CSS ile "Drag and drop file here" ve "Browse files" butonunu gizle (isteğe bağlı)
+    # CSS ile "Drag and drop file here" ve "Browse files" butonunu gizle
     st.markdown("""
     <style>
     [data-testid="stFileUploaderDropzoneInstructions"] {
