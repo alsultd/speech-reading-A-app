@@ -158,14 +158,17 @@ def report_errors(error_rate, extra_words, missing_words):
 def main():
     st.title("Sesle Okuma Çalışması")
     st.write("Rastgele sayı:", random.randint(1, 1000))
-    topic_no = st.number_input("Konu No giriniz:", min_value=1, step=1)
-    uploaded_file = st.file_uploader("Yüklemek için bir .docx dosyası seçin", type="docx")
+    # Toplam parça sayısını bilgilendirme (opsiyonel)
+    st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
+    topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
+    uploaded_file = st.file_uploader("Yüklemek için .docx veritabanı dosyasını seçin", type="docx")
     if st.button("Metni Yükle") and uploaded_file and topic_no:
         text = get_text_from_docx(uploaded_file, topic_no)
         if text:
+            st.success("METİN BAŞARIYLA YÜKLENDİ!")
             st.write(text)
         else:
-            st.error("Belirtilen konu numarasına ait metin bulunamadı.")
+            st.error("Belirtilen konu numarasına ait metin bulunamadı. Lütfen 1-158 arasında bir numara giriniz.")
 
 if __name__ == "__main__":
     main()
