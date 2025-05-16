@@ -8,12 +8,12 @@ import random
 def get_text_from_docx(uploaded_file, topic_no):
     st.write("get_text_from_docx fonksiyonu çağrıldı!")
     if uploaded_file is not None:
-        st.write("Dosya algılandı, işlem başlıyor...")
+        st.write(f"Yüklenen dosya: {uploaded_file.name}")
         import tempfile
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
             try:
                 st.write("Dosya yazma denemesi yapılıyor...")
-                tmp_file.write(uploaded_file.read())
+                tmp_file.write(uploaded_file.getvalue())  # getvalue() ile binary veri al
                 tmp_file_path = tmp_file.name
                 st.write("Dosya yazma başarılı, işleniyor:", tmp_file_path)
             except Exception as e:
@@ -46,15 +46,18 @@ def get_text_from_docx(uploaded_file, topic_no):
             for topic in topics:
                 if topic["number"] == topic_no:
                     st.write(f"Eşleşen konu bulundu: {topic_no}")
+                    import os
+                    os.unlink(tmp_file_path)
                     return topic["text"]
             st.error(f"Konu {topic_no} bulunamadı!")
+            import os
+            os.unlink(tmp_file_path)
             return None
         except Exception as e:
             st.error(f"Metin işleme hatası: {str(e)}")
-            return None
-        finally:
             import os
             os.unlink(tmp_file_path)
+            return None
     else:
         st.error("Dosya yüklenmedi!")
     return None
@@ -70,8 +73,15 @@ def main():
     st.write("Dosya durumu:", "Yüklenmiş" if uploaded_file else "Yüklenmemiş")
     st.write("Konu numarası:", topic_no)
     
+    # Daha kapsamlı CSS ile file uploader'ı tamamen gizle
     st.markdown("""
     <style>
+    [data-testid="stFileUploader"] {
+        display: none !important;
+    }
+    [data-testid="stFileUploaderDropzone"] {
+        display: none !important;
+    }
     [data-testid="stFileUploaderDropzoneInstructions"] {
         display: none !important;
     }
@@ -80,11 +90,6 @@ def main():
     }
     [data-testid="stFileUploader"] > div > div > div > div {
         display: none !important;
-    }
-    [data-testid="stFileUploader"] {
-        border: 1px dashed #ccc;
-        padding: 10px;
-        text-align: center;
     }
     </style>
     """, unsafe_allow_html=True)
