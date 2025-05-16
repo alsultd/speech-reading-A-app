@@ -9,10 +9,14 @@ def get_text_from_docx(uploaded_file, topic_no):
     if uploaded_file is not None:
         import tempfile
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
-            tmp_file.write(uploaded_file.read())
-            tmp_file_path = tmp_file.name
+            try:
+                tmp_file.write(uploaded_file.read())
+                tmp_file_path = tmp_file.name
+                st.write("Dosya yükleme başarılı, işleniyor:", tmp_file_path)
+            except Exception as e:
+                st.error(f"Dosya yazma hatası: {str(e)}")
+                return None
         try:
-            st.write("Dosya yükleme başarılı, işleniyor:", tmp_file_path)
             doc = docx.Document(tmp_file_path)
             paragraphs = [p for p in doc.paragraphs if p.text.strip()]  # Boş olmayan paragrafları al
             st.write("Toplam paragraf sayısı:", len(paragraphs))
@@ -23,6 +27,7 @@ def get_text_from_docx(uploaded_file, topic_no):
             current_number = None
             for p in paragraphs:
                 match = re.match(r'^Konu\s*[:\s]*(\d+)', p.text, re.IGNORECASE)  # p.text kullan
+                st.write(f"Paragraf kontrol ediliyor: '{p.text}', Eşleşme: {match}")
                 if match:
                     if current_topic and current_number is not None:
                         topics.append({"number": current_number, "text": current_topic})
@@ -39,6 +44,7 @@ def get_text_from_docx(uploaded_file, topic_no):
                 if "number" not in topic:
                     st.error("Hata: 'number' anahtarı eksik!")
                     continue
+                st.write(f"Konu kontrol ediliyor: {topic}")
                 if topic["number"] == topic_no:
                     topic["text"] = topic["text"].replace("=== KONU SONU ===", "").strip()
                     st.write("Eşleşen konu bulundu:", topic)
@@ -47,7 +53,7 @@ def get_text_from_docx(uploaded_file, topic_no):
                 st.write("Konu başlıkları bulunamadı, tüm metni döndürüyorum.")
                 return "\n".join(p.text for p in paragraphs if p.text)
         except Exception as e:
-            st.error(f"Hata oluştu: {str(e)}")
+            st.error(f"Metin işleme hatası: {str(e)}")
             return None
         finally:
             import os
@@ -56,7 +62,7 @@ def get_text_from_docx(uploaded_file, topic_no):
 
 def main():
     st.title("Sesle Okuma Çalışması")
-    st.write("Rastgele sayı:", random.randint(1, 1000))
+    st.write("Rastgele sayı:", random.randint(1, 158))
     st.write("Veritabanında 158 okuma parçası bulunmaktadır.")
     topic_no = st.number_input("Okuma parçasının numarasını giriniz (1-158):", min_value=1, max_value=158, step=1)
     
