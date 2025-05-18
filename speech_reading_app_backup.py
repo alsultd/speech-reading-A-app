@@ -1,14 +1,6 @@
-# YERELDE ÇALIŞACAK VERSİYON
-
-# YENİ VERSİYON
-#streamlit run speech_reading_app_cloud.py   /bunu cmd'de de H: yap bunu yaz enter yap
-
-
-#streamlit run speech_reading_app.py   /bunu cmd'de de H: yap bunu yaz enter yap
-
 import docx
 import re
-#import speech_recognition as sr
+import speech_recognition as sr
 from deep_translator import GoogleTranslator
 import pronouncing
 import difflib
@@ -67,25 +59,23 @@ def evaluate_speech(original, spoken):
     missing_words = [word for word in original_words if word not in spoken_words]
     return error_rate, extra_words, missing_words
 
-#----------------------------------------------
-# Bu satırı bulutta çalışmak için sildim, gerekirse orijinal dosyaya bakınız
-from google.cloud import speech
-import io
+def listen_and_convert():
+    recognizer = sr.Recognizer()
+    recognizer.pause_threshold = 2
+    recognizer.dynamic_energy_threshold = False
+    with sr.Microphone() as source:
+        st.write("Ortam sesi ayarlanıyor... Lütfen bekleyin.")
+        recognizer.adjust_for_ambient_noise(source, duration=4)
+        winsound.Beep(1000, 500)
+        st.write("Konuşmaya başlayabilirsiniz.")
+        try:
+            audio = recognizer.listen(source, timeout=2, phrase_time_limit=30)
+            return recognizer.recognize_google(audio, language="en-US")
+        except sr.UnknownValueError:
+            return "Konuşma anlaşılamadı."
+        except sr.RequestError as e:
+            return f"Konuşma tanıma servisine bağlanılamadı: {e}"
 
-def transcribe_audio(file):
-    client = speech.SpeechClient()
-    audio = speech.RecognitionAudio(content=file.getvalue())
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US",
-    )
-    response = client.recognize(config=config, audio=audio)
-    if response.results:
-        return response.results[0].alternatives[0].transcript
-
-
-#--------------------------------------------------------------
 def translate_word(word):
     try:
         return GoogleTranslator(source='en', target='tr').translate(word)
@@ -233,29 +223,22 @@ def main():
         with col1:
             if st.button("Paragrafı Oku", key="read_paragraph"):
                 read_paragraph(paragraphs[current_index])
-#        with col2:
-#            if st.button("Sesimi Kaydet", key="record_speech"):
-#                spoken_text = listen_and_convert()
-#                st.session_state["spoken_text"] = spoken_text
-#                if spoken_text.startswith("Konuşma"):
-#                    st.error(spoken_text)
         with col2:
-            audio_file = st.file_uploader("Ses dosyanızı yükleyin (.wav)", type=["wav"])
-            if audio_file:
-                spoken_text = transcribe_audio(audio_file)
+            if st.button("Sesimi Kaydet", key="record_speech"):
+                spoken_text = listen_and_convert()
                 st.session_state["spoken_text"] = spoken_text
-                st.write("**Tanınan Metniniz (Sizin Okumanız):**")
-                st.write(spoken_text)
-                if st.session_state["spoken_text"]:
-                    error_rate, extra_words, missing_words = evaluate_speech(paragraphs[current_index], st.session_state["spoken_text"])
+                if spoken_text.startswith("Konuşma"):
+                    st.error(spoken_text)
+                else:
+                    error_rate, extra_words, missing_words = evaluate_speech(paragraphs[current_index], spoken_text)
                     if error_rate < ERROR_THRESHOLD:
                         st.success("Harika! Okumanız oldukça iyi.")
                     else:
                         st.warning("Bazı hatalar var. Aşağıdaki raporu inceleyin.")
                     report_errors(error_rate, extra_words, missing_words)
-                    st.write("**Karşılaştırma:**")
-                    st.write("Orijinal Paragraf:", paragraphs[current_index])
-                    st.write("Sizin Okumanız:", st.session_state["spoken_text"])
+                    st.write("**Tanınan Metniniz (Sizin Okumanız):**")
+                    st.write(spoken_text)
+
         if st.session_state["spoken_text"] and not st.session_state["spoken_text"].startswith("Konuşma"):
             st.write("**Karşılaştırma:**")
             st.write("Orijinal Paragraf:", paragraphs[current_index])
