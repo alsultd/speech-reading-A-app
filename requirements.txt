@@ -1,5 +1,2 @@
 streamlit
 python-docx
-deep-translator
-pronouncing
-setuptools
