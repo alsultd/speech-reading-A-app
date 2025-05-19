@@ -90,7 +90,7 @@ def transcribe_audio(file):
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.MP3,
         sample_rate_hertz=16000,
-      	language_code="tr-TR",  #iNGİLİZCE için "en-US" yapabilirsiniz
+        language_code="tr-TR",
     )
     response = client.recognize(config=config, audio=audio)
     if response.results:
