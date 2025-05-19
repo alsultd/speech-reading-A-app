@@ -8,11 +8,11 @@
 
 import docx
 import re
-#import speech_recognition as sr
-from deep_translator import GoogleTranslator
+import speech_recognition as sr
+#from deep_translator import GoogleTranslator
 import pronouncing
 import difflib
-import winsound
+#import winsound
 import random
 import streamlit as st
 from streamlit.components.v1 import html
