@@ -9,7 +9,7 @@
 import docx
 import re
 #import speech_recognition as sr
-#from deep_translator import GoogleTranslator
+from deep_translator import GoogleTranslator
 #import pronouncing
 import difflib
 #import winsound
@@ -21,6 +21,17 @@ import os
 # Sabitler
 ERROR_THRESHOLD = 0.3
 TOTAL_TOPICS = 160  # Şu anki toplam konu sayısı
+
+#-----------------TEST AMAÇLI FONKSİYON-----
+st.write("Çeviri Testi")
+test_text = "Hello, how are you?"
+try:
+    translated = GoogleTranslator(source='auto', target='tr').translate(test_text)
+    st.write(f"Çevrilmiş metin: {translated}")
+except Exception as e:
+    st.write(f"Çeviri hatası: {str(e)}")
+#-----------------TEST AMAÇLI FONKSİYON SONU---------
+
 
 def get_text_from_docx(doc_path, topic_no):
     """Belirtilen dosya yolundan ve konu numarasından metni alır."""
@@ -72,18 +83,33 @@ def evaluate_speech(original, spoken):
 from google.cloud import speech
 import io
 
+# transcribe_audio fonksiyonu (zaten kodunuzda var, buraya kopyalıyoruz)
 def transcribe_audio(file):
     client = speech.SpeechClient()
     audio = speech.RecognitionAudio(content=file.getvalue())
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=16000,
-        language_code="en-US",
+        language_code="en-US",  # Türkçe için "tr-TR" yapabilirsiniz
     )
     response = client.recognize(config=config, audio=audio)
     if response.results:
         return response.results[0].alternatives[0].transcript
+    else:
+        return "Tanıma başarısız: Sonuç bulunamadı."
 
+# Ses dosyası yükleme ve tanıma
+audio_file = st.file_uploader("Lütfen bir WAV veya MP3 ses dosyası yükleyin", type=["wav", "mp3"])
+
+if audio_file is None:
+    st.warning("Sesle okuma için lütfen bir ses dosyası yükleyin.")
+else:
+    st.success("Dosya başarıyla yüklendi!")
+    try:
+        transcribed_text = transcribe_audio(audio_file)
+        st.write("Tanınan metin:", transcribed_text)
+    except Exception as e:
+        st.error(f"Ses tanıma hatası: {str(e)}")
 
 #--------------------------------------------------------------
 def translate_word(word):
