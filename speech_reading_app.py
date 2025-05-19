@@ -10,7 +10,7 @@ import docx
 import re
 #import speech_recognition as sr
 #from deep_translator import GoogleTranslator
-import pronouncing
+#import pronouncing
 import difflib
 #import winsound
 import random
@@ -148,10 +148,10 @@ def report_errors(error_rate, extra_words, missing_words):
         st.write("**Eksik kelimeler:**")
         missing_data = []
         for word in missing_words:
-            phonetics = pronouncing.phones_for_word(word)
-            phonetic = phonetics[0] if phonetics else "Telaffuz bulunamadı"
+            # phonetics = pronouncing.phones_for_word(word)
+            # phonetic = phonetics[0] if phonetics else "Telaffuz bulunamadı"
             translation = translate_word(word)
-            missing_data.append({"Kelime": word, "Telaffuz": phonetic, "Türkçe": translation})
+            missing_data.append({"Kelime": word, "Telaffuz": "Telaffuz devre dışı", "Türkçe": translation})
         st.table(missing_data)
 
 def main():
