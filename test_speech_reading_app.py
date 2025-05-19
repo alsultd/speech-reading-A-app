@@ -88,9 +88,9 @@ def transcribe_audio(file):
     client = speech.SpeechClient()
     audio = speech.RecognitionAudio(content=file.getvalue())
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        encoding=speech.RecognitionConfig.AudioEncoding.MP3,
         sample_rate_hertz=16000,
-        language_code="en-US",  # Türkçe için "tr-TR" yapabilirsiniz
+      	language_code="tr-TR",  #iNGİLİZCE için "en-US" yapabilirsiniz
     )
     response = client.recognize(config=config, audio=audio)
     if response.results:
