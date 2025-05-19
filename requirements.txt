@@ -1,2 +1,5 @@
 streamlit
 python-docx
+deep-translator==1.11.4
+pronouncing
+google-cloud-speech
