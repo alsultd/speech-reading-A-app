@@ -98,6 +98,8 @@ def transcribe_audio(file):
     else:
         return "Tanıma başarısız: Sonuç bulunamadı."
 
+# Değişiklik kontrolü için yeni yorum satırı - 19.05.2025 21:15
+
 # Ses dosyası yükleme ve tanıma
 audio_file = st.file_uploader("Lütfen bir WAV veya MP3 ses dosyası yükleyin", type=["wav", "mp3"])
 
