@@ -17,6 +17,16 @@ import random
 import streamlit as st
 from streamlit.components.v1 import html
 import os
+from google.cloud import speech
+import logging
+
+# Logging ayarı
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Google Cloud kimlik doğrulama
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credentials.json"
+logger.info("Credentials set to: %s", os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 
 # Sabitler
 ERROR_THRESHOLD = 0.3
@@ -84,19 +94,41 @@ from google.cloud import speech
 import io
 
 # transcribe_audio fonksiyonu (zaten kodunuzda var, buraya kopyalıyoruz)
+# Ses dosyasını metne çevirme fonksiyonu
 def transcribe_audio(file):
-    client = speech.SpeechClient()
-    audio = speech.RecognitionAudio(content=file.getvalue())
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.MP3,
-        sample_rate_hertz=16000,
-        language_code="tr-TR",
-    )
-    response = client.recognize(config=config, audio=audio)
-    if response.results:
-        return response.results[0].alternatives[0].transcript
-    else:
-        return "Tanıma başarısız: Sonuç bulunamadı."
+    try:
+        logger.info("Initializing SpeechClient...")
+        client = speech.SpeechClient()
+        logger.info("SpeechClient initialized successfully")
+        audio = speech.RecognitionAudio(content=file.getvalue())
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.MP3,
+            sample_rate_hertz=16000,
+            language_code="tr-TR",
+        )
+        logger.info("Sending request to Google Speech-to-Text API...")
+        response = client.recognize(config=config, audio=audio)
+        logger.info("Response received from API")
+        if response.results:
+            return response.results[0].alternatives[0].transcript
+        else:
+            return "Tanıma başarısız: Sonuç bulunamadı."
+    except Exception as e:
+        logger.error("Error in transcribe_audio: %s", str(e))
+        return f"Hata oluştu: {str(e)}"
+# Streamlit arayüzü
+st.title("Ses Tanıma Uygulaması")
+st.write("Bir ses dosyası yükleyin (MP3 formatında):")
+
+uploaded_file = st.file_uploader("Ses dosyası seçin", type=["mp3"])
+
+if uploaded_file is not None:
+    st.write("Başarıyla yüklendi!")
+    with st.spinner("Ses tanınıyor..."):
+        result = transcribe_audio(uploaded_file)
+    st.write("Tanınan metin:", result)
+else:
+    st.write("Lütfen bir ses dosyası yükleyin.")
 
 # Değişiklik kontrolü için yeni yorum satırı - 19.05.2025 21:15
 
